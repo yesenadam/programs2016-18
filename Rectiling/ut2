@@ -1,0 +1,265 @@
+#%cython #uncomment this line to run in a Sage notebook
+# Rectiling v1 - 8 Jan 2017
+#
+#Improvements to make
+#- put bool option, whether to print rects with neg edges or not.
+#- add appropriate colouring for square tilings.
+#- check if input/enter vals add up properly. ERROR if not.
+from sage.misc.functional import show
+from sage.plot.graphics import Graphics
+from sage.plot.line import line2d
+from sage.plot.text import text
+from sage.plot.polygon import polygon2d as p
+#NB polygon edgecolor has only worked since 2014;download the new polygon.py if needed
+from sage.misc.latex import latex
+from libc.math cimport abs
+#--------------------------------------------------
+#USER-EDITED VALUES
+DEF cx=30*4 #x-pos of central rect in grid - NB keep as a multiple of 4.
+#Change cx here to affect number of rects calculated: approx (2*cx)^2
+cdef bint PrintGrid=False #also makes pgn of the grid if True
+DEF GRIDPICSIZE=12 #size of grid pgn produced
+cdef bint LabelTiling=False # writes sizes on tiling if True
+DEF TILPICSIZE=16 #size of tiling pgn produced
+DEF EDGE=0.5 #black edge width, try 0.5 or 1
+cdef bint ColourIn=True #make coloured tiling if True
+DEF MAXSIDE=250.0 #for colouring - set to approx largest side length
+#MAXSIDE controls how big the rects have to be before the red level maxes out
+#i.e. a smaller value will make the tiling look redder.
+#Current colour map: skinnier=greener. shorter=bluer. bigger=redder
+#--------------------------------------------------
+DEF cy=cx #y-pos in grid of initial rectangle.
+DEF MAXDIM=2*cx 
+DEF gridwidth=cx-4 # number of cells x cells to show on grid. must be <cx,cy
+DEF H=gridwidth/2 # <-- NB must be even!! won't work otherwise (so cx must be 4n)
+DEF TILH=H-1 #half-width of tiling to draw
+cdef:
+    bint InfoAdded
+    int i,j,k
+    struct r: 
+        int w,h #width,height of rectangle
+        bint WK,HK #true if width, height known
+        int L,R,T,B #x/y loc of sides in tiling
+        bint Drawn #true if drawn in tiling already
+    r g[MAXDIM][MAXDIM], *C 
+cdef EnterSize(int x[2], int wid, int hei): #enter a few rects to start with. See below
+    C = &g[x[0]+cx][x[1]+cy]
+    C.w=wid
+    C.h=hei
+    C.WK=True
+    C.HK=True
+cdef ExtrapolateWidths(int xoff, int yoff): #try filling widths diagonally from known squares
+    global InfoAdded
+    cdef r *opp=&g[i-xoff][j-yoff] #i.e. 'opp' is on the opposite side of current square to 'new'
+    cdef r *new=&g[i+xoff][j+yoff]
+    if opp.WK and not new.WK: #ie 2 in a row, fill the third one with sequence
+        new.w=(g[i][j].w-opp.w)+g[i][j].w
+        new.WK=True
+        InfoAdded=True
+cdef ExtrapolateHeights(int xoff, int yoff):
+    global InfoAdded
+    cdef r *opp=&g[i-xoff][j-yoff] #i.e. 'opp' is on the opposite side of current square to 'new'
+    cdef r *new=&g[i+xoff][j+yoff]
+    if opp.HK and not new.HK:
+        new.h=(g[i][j].h-opp.h)+g[i][j].h
+        new.HK=True
+        InfoAdded=True
+cdef CheckHline(int i, int j): #checks if 3 rects from an hline already known, if so adds the 4th
+    global InfoAdded
+    cdef r *a, *b, *c, *d
+    a=&g[i][j+1]
+    b=&g[i+1][j+1]
+    c=&g[i][j]
+    d=&g[i+1][j]
+    if c.WK and a.WK and b.WK and not d.WK: #if a,b,c known, but not d
+        d.w=a.w+b.w-c.w # d=a+b-c
+        d.WK=True 
+        InfoAdded=True
+    if d.WK and a.WK and b.WK and not c.WK:
+        c.w=a.w+b.w-d.w 
+        c.WK=True 
+        InfoAdded=True
+    if a.WK and c.WK and d.WK and not b.WK:
+        b.w=c.w+d.w-a.w 
+        b.WK=True                    
+        InfoAdded=True
+    if b.WK and c.WK and d.WK and not a.WK: 
+        a.w=c.w+d.w-b.w 
+        a.WK=True
+        InfoAdded=True
+cdef CheckVline(int i, int j): #checks for 3 rects from a v-line
+    global InfoAdded
+    cdef r *a, *b, *c, *d
+    a=&g[i][j+1]
+    b=&g[i][j]
+    c=&g[i+1][j+1]
+    d=&g[i+1][j]
+    if c.HK and a.HK and b.HK and not d.HK: 
+        d.h=a.h+b.h-c.h  
+        d.HK=True 
+        InfoAdded=True
+    if d.HK and a.HK and b.HK and not c.HK:
+        c.h=a.h+b.h-d.h 
+        c.HK=True 
+        InfoAdded=True
+    if a.HK and c.HK and d.HK and not b.HK:
+        b.h=c.h+d.h-a.h 
+        b.HK=True                    
+        InfoAdded=True
+    if b.HK and c.HK and d.HK and not a.HK: 
+        a.h=c.h+d.h-b.h 
+        a.HK=True
+        InfoAdded=True
+cdef bint Extrapolate():
+    global i, j, k, InfoAdded
+    cdef int u, v
+    InfoAdded=False
+    for i in range(cx-H,cx+H):
+        #tries to fill empty grid numbers. returns True if it's made progress, else False.
+        for j in range(cy-H,cy+H):
+            if g[i][j].WK:
+                for u in range(-1,2,2):
+                    for v in range(-1,2,2):
+                        ExtrapolateWidths(u,v) 
+            if g[i][j].HK:
+                for u in range(-1,2,2): #i.e. -1 then 1
+                    for v in range(-1,2,2):
+                        ExtrapolateHeights(u,v) #try extending heights
+    for i in range(cx-H,cx+H+1): #now try to fill in h-lines.
+        for k in range(cy-H,cy+H+1,2):  #cy-H must be even  
+            j=k+i%2 #to get the checkerboard pattern. i & j are both odd or both even.
+            #let c (i+0,j+0) = bottom left of an h-line.
+            CheckHline(i,j)
+    for i in range(cx-H,cx+H+1):  #try to complete v-lines
+        for k in range(cy-H+1,cy+H+1,2): #cy-H+1 must be odd
+            j=k+i%2 #i & j are now opposite parity.
+            CheckVline(i,j)
+    return InfoAdded # true if anything has been learnt/added this time through
+cdef ShowGridVals(): #draws the known grid values on the grid
+    global f,i,j
+    for i in range(cx-H,cy+H):
+        for j in range(cx-H,cy+H):
+            C=&g[i][j]
+            if C.WK: #if width known, print it
+                f+=text("${}$".format(C.w),(i+0.25,j+0.75))  
+            if C.HK:
+                f+=text("${}$".format(C.h),(i+0.75,j+0.25))  
+cdef int Colour(float dim):
+    dim=255-dim*(255.0/MAXSIDE)
+    if dim<0:
+        return 0
+    else:
+        return int(dim)
+cdef Draw(int x,int y):
+    global f
+    cdef r *S = &g[x][y]
+    cdef int red
+    cdef float fw,fh
+    rect=[[S.L,S.B],[S.R,S.B],[S.R,S.T],[S.L,S.T]]
+    if ColourIn:
+        fw=float(abs(S.w))
+        fh=float(abs(S.h))
+        red=int(255.0*(fw*fh)/(MAXSIDE*MAXSIDE)) #bigger = redder
+        if red>255: red=255
+        if red<0: red=0
+        f+=p(rect,color='#%02x%02x%02x' % (red,Colour(fw),Colour(fh)), \
+            edgecolor="black",thickness=EDGE)   
+    else:
+        f+=p(rect,fill=False,color="black") 
+    if LabelTiling:
+        f+=text("${},{}$".format(S.w,S.h),((S.L+S.R)/2.0,(S.T+S.B)/2.0),color="black")   
+    S.Drawn = True 
+cdef DrawType1AndFindNeighboursSides(int X, int Y):
+    if X>cx+TILH or X<cx-TILH or Y>cy+TILH or Y<cy-TILH:
+        return
+    cdef r *N, *S = &g[X][Y]
+    Draw(X,Y)
+    #given a type 1 rect at X,Y, work out neighbours' sides positions
+    N=&g[X+1][Y]    #the rectangle to right
+    if not N.Drawn and N.h>0 and N.w>0: #if not drawn yet, and has sides>0
+        SetSides(N,S.T,S.L+N.w,S.T-N.h,S.R) 
+        DrawType2AndFindNeighboursSides(X+1,Y)
+    N=&g[X][Y+1]    #the rectangle above
+    if not N.Drawn and N.h>0 and N.w>0:
+        SetSides(N,S.T+N.h,S.L+N.w,S.T,S.L)
+        DrawType2AndFindNeighboursSides(X,Y+1)
+    N=&g[X][Y-1]    #the rectangle below
+    if not N.Drawn and N.h>0 and N.w>0:
+        SetSides(N,S.B,S.R,S.B-N.h,S.R-N.w)
+        DrawType2AndFindNeighboursSides(X,Y-1)
+    N=&g[X-1][Y]    #the rectangle to left
+    if not N.Drawn and N.h>0 and N.w>0:
+        SetSides(N,S.B+N.h,S.L,S.B,S.L-N.w)
+        DrawType2AndFindNeighboursSides(X-1,Y)
+cdef DrawType2AndFindNeighboursSides(int X, int Y):
+    if X>cx+TILH or X<cx-TILH or Y>cy+TILH or Y<cy-TILH:
+        return
+    cdef r *N, *S = &g[X][Y]
+    Draw(X,Y)
+    #given type 2 rect at X,Y, work out neighbours' sides positions
+    N=&g[X+1][Y] #the rectangle to right
+    if not N.Drawn and N.h>0 and N.w>0:
+        SetSides(N,S.B+N.h,S.R+N.w,S.B,S.R)
+        DrawType1AndFindNeighboursSides(X+1,Y)
+    N=&g[X][Y+1] #the rectangle above
+    if not N.Drawn and N.h>0 and N.w>0:
+        SetSides(N,S.T+N.h,S.R,S.T,S.R-N.w)
+        DrawType1AndFindNeighboursSides(X,Y+1)
+    N=&g[X][Y-1] #the rectangle below
+    if not N.Drawn and N.h>0 and N.w>0:
+        SetSides(N,S.B,S.L+N.w,S.B-N.h,S.L) 
+        DrawType1AndFindNeighboursSides(X,Y-1)
+    N=&g[X-1][Y]  #the rectangle to left
+    if not N.Drawn and N.h>0 and N.w>0:
+        SetSides(N,S.T,S.L,S.T-N.h,S.L-N.w)
+        DrawType1AndFindNeighboursSides(X-1,Y)
+cdef SetSides(r *C,int T, int R, int B, int L):
+    C.T=T
+    C.R=R
+    C.B=B
+    C.L=L
+#Initialize vars
+for i in range(MAXDIM):
+    for j in range(MAXDIM):
+        C=&g[i][j]
+        C.WK=False
+        C.HK=False
+        C.Drawn=False
+        SetSides(C,-1000,-1000,-1000,-1000) #mainly so theyre not >0
+#--------------------------------------------------
+#manually enter known vals  
+EnterSize([0,1],10,20) 
+EnterSize([1,1],12,16) 
+EnterSize([0,0],9,14) 
+EnterSize([1,0],13,13) 
+EnterSize([0,-1],8,9) 
+EnterSize([1,-1],3,10) 
+
+#e.g. to get a square tesselation
+# EnterSize([0,1],5,5) 
+# EnterSize([1,1],2,2) 
+# EnterSize([0,0],3,3) 
+# EnterSize([1,0],4,4) 
+# EnterSize([0,-1],10,10) 
+# EnterSize([1,-1],9,9) 
+#--------------------------------------------------
+#draw grid
+if PrintGrid:
+    f=Graphics()
+    for i in range(cx-H,cx+H,2): 
+        for j in range(cx-H,cx+H,2):
+            for k in range(2):
+                f+=line2d([[i+0.1+k,j+1+k],[i+1.9+k,j+1+k]],color="black")
+                f+=line2d([[i+k+1,j+1.1-k],[i+k+1,j+2.9-k]],color="black")
+while Extrapolate():
+    pass 
+if PrintGrid:
+    ShowGridVals()
+    show(f, aspect_ratio=1,figsize=GRIDPICSIZE)
+f=Graphics()
+#Now draw tiling
+C=&g[cx][cy] #put grid rect [cy][cy] with its bottom left at (0,0), then work outwards
+SetSides(C,C.h,C.w,0,0) #pointer,top,right,bottom,left sides.
+#g[cx,cy] is called type 1 - bottom left of an h-line. its perp neighbours are type2.
+DrawType1AndFindNeighboursSides(cx,cy)
+show(f,aspect_ratio=1,figsize=TILPICSIZE,axes=False)

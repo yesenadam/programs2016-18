@@ -1,0 +1,16 @@
+Carving cython programs info
+Seam Carving (my algorithm - deletes path most like its neighbour each time)
+Best version without masking: v3
+
+ARGHH last night I made a lot of changes to v7(masking), today imported them into v4... and there's a bug. So back to using v3.
+The right 1/4 or so of picture is shifted up, across the screen, comes up the bottom....
+So it MUST be caused by something wrong with the vertical-shifting lines.. gee, I can't find what's wrong though. Soo....
+Probably caused by the new looping, optionally doing width or vertical seams...
+
+Wish I could break the long function up.. but #(*&$ ndarrays cant be used in .. uh... hmm.
+They can't be global variables.
+
+needs to be updated with v7 changes.
+
+Best masking version: v7.
+

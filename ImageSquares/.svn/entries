@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wc-entries
+   xmlns="svn:">
+<entry
+   committed-rev="12"
+   name=""
+   committed-date="2016-09-18T05:30:14.639031Z"
+   url="file:///Users/admin/repos/cython/ImageSquares"
+   last-author="Adam"
+   kind="dir"
+   uuid="0c59f08e-433c-0510-9c75-d0f35b3daa0f"
+   repos="file:///Users/admin/repos"
+   revision="13"/>
+<entry
+   name="trunk"
+   kind="dir"/>
+<entry
+   name="branches"
+   kind="dir"/>
+<entry
+   name="tags"
+   kind="dir"/>
+</wc-entries>

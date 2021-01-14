@@ -1,0 +1,21 @@
+#Pentagon stars pattern
+LEVMAX=5
+gon=7 #heptagons. pentagon=5 etc
+phi=sqrt(5)#for pentagon=1.61803399
+def PhiAve(r,s):
+   return [(r[j]+s[j]*phi)/(phi+1) for j in range(2)]
+def draw_star(pts,level):
+   a=Graphics()
+   #do sub stars
+   if level<LEVMAX:
+       for j in range(gon):
+          npts=[pts[j]]
+          for k in range(gon-1):
+              npts.append(PhiAve(pts[(j+k+1)%gon],pts[j]))        
+          a+=draw_star(npts,level+1)
+#NB will need multiple lines like the next for non-prime gons!!!!!!
+   a+=line([pts[j%gon] for j in srange(0,gon*2+1,2)],rgbcolor=(1/level,level/(LEVMAX*2),level/LEVMAX)) 
+   return a 
+v=[[cos(a),sin(a)] for a in srange(pi/(gon*2),(gon*4+1)*pi/(gon*2),2*pi/gon)]
+f=draw_star(v,1)
+%time show(f,axes=False,figsize=10,aspect_ratio=1)

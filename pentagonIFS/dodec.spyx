@@ -1,0 +1,5 @@
+#based on dodecahedral subdivision rule
+cpdef subdiv4(v list, float level):
+#square/quad to subdivide. v has 4 elements.
+#v0->v1 is dark line.
+#circles overlap so that triangles are equal sided..

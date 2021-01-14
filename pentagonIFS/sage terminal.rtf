@@ -1,0 +1,189 @@
+{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf480
+{\fonttbl\f0\fswiss\fcharset77 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+\margl1440\margr1440\vieww10780\viewh9880\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
+
+\f0\fs28 \cf0 ==============\
+Pentagon Subdivision\
+closer to Floyd's version.. but not exactly the same\
+\
+%attach 5pent2.pyx\
+\
+polygon2d.options.update(dict([['thickness',0.5]]))\
+rad=5\
+t=[]\
+for w in srange(0+pi/2,2*pi+pi/2-0.01,2*pi/5):\
+    t.append([rad*cos(w)+rad,rad*sin(w)+rad-0.4])\
+f=firstsubdiv(t,0,0,0,0,0,0)\
+f+=polygon2d([[-0.1,-0.1],[10.1,-0.1],[10.1,10.1],[-0.1,10.1]],rgbcolor=(0,0,0),fill=True,zorder=1)\
+show(f,axes=False,aspect_ratio=1,figsize=[16,16])\
+=============================================\
+Pentagon Subdivision 3\
+very close to Floyd's version.. but not exactly the same\
+\
+%attach 5pent3.pyx\
+\
+polygon2d.options.update(dict([['thickness',0.5]]))\
+rad=5\
+t=[]\
+for w in srange(0+pi/2,2*pi+pi/2-0.01,2*pi/5):\
+    t.append([rad*cos(w)+rad,rad*sin(w)+rad-0.4])\
+f=subdiv(t,0,[0,0,0,0,0])\
+f+=polygon2d([[-0.1,-0.1],[10.1,-0.1],[10.1,10.1],[-0.1,10.1]],rgbcolor=(0,0,0),fill=True,zorder=1)\
+%time show(f,axes=False,aspect_ratio=1,figsize=[16,16])\
+======================\
+same but inside a square: (4 pentagons)\
+\
+% attach 5pent3.pyx\
+\
+polygon2d.options.update(dict([['thickness',0.5]]))\
+rad=5\
+bit=0.3\
+c=[5,5]; r=[10,5]; t=[5,10]; l=[0,5]; b=[5,0]\
+#for w in srange(0+pi/2,2*pi+pi/2-0.01,2*pi/5):\
+#    t.append([rad*cos(w)+rad,rad*sin(w)+rad-0.4])\
+f=subdiv([c,r,[10,7],[7,10],t],0,[0,0,0,0,0])\
+f+=subdiv([c,t,[3,10],[0,7],l],0,[0,0,0,0,0])\
+f+=subdiv([c,l,[0,3],[3,0],b],0,[0,0,0,0,0])\
+f+=subdiv([c,b,[7,0],[10,3],r],0,[0,0,0,0,0])\
+f+=polygon2d([[-bit,-bit],[10+bit,-bit],[10+bit,10+bit],[-bit,10+bit]],rgbcolor=(0,0,0),fill=True,zorder=1)\
+%time show(f,axes=False,aspect_ratio=1,figsize=[16,16])\
+======================\
+same but 2 rectangular 'pentagons' facing each other.. tesselatable\
+inside a square: \
+\
+% attach 5pent3.pyx\
+\
+polygon2d.options.update(dict([['thickness',0.5]]))\
+rad=5\
+bit=0#0.3\
+c=[5,5]; r=[10,5]; t=[5,10]; l=[0,5]; b=[5,0]\
+#for w in srange(0+pi/2,2*pi+pi/2-0.01,2*pi/5):\
+#    t.append([rad*cos(w)+rad,rad*sin(w)+rad-0.4])\
+f=subdiv([[5,5],[0,5],[0,0],[10,0],[10,5]],0,[0,0,0,0,0])\
+f+=subdiv([[5,5],[10,5],[10,10],[0,10],[0,5]],0,[0,0,0,0,0])\
+f+=polygon2d([[-bit,-bit],[10+bit,-bit],[10+bit,10+bit],[-bit,10+bit]],rgbcolor=(0,0,0),fill=True,zorder=1)\
+%time show(f,axes=False,aspect_ratio=1,figsize=[16,16])\
+\
+======================\
+same but 1 square pentagon \
+\
+% attach 5pent3.pyx\
+\
+polygon2d.options.update(dict([['thickness',0.5]]))\
+rad=5\
+bit=0.4#0.3\
+c=[5,5]; r=[10,5]; t=[5,10]; l=[0,5]; b=[5,0]\
+#for w in srange(0+pi/2,2*pi+pi/2-0.01,2*pi/5):\
+#    t.append([rad*cos(w)+rad,rad*sin(w)+rad-0.4])\
+f=subdiv([[5,10],[0,10],[0,0],[10,0],[10,10]],0,[0,0,0,0,0])\
+#f+=subdiv([[5,5],[10,5],[10,10],[0,10],[0,5]],0,[0,0,0,0,0])\
+f+=polygon2d([[-bit,-bit],[10+bit,-bit],[10+bit,10+bit],[-bit,10+bit]],rgbcolor=(0,0,0),fill=True,zorder=1)\
+%time show(f,axes=False,aspect_ratio=1,figsize=[16,16])\
+\
+==============================================\
+==================================\
+Rotational Symm Pentagon Subdivision\
+(not Floyd's version.. his changes the sides)\
+\
+%attach 5pent.spyx\
+polygon2d.options.update(dict([['thickness',0.5]]))\
+rad=5\
+t=[]\
+for w in srange(0+pi/2,2*pi+pi/2-0.01,2*pi/5):\
+    t.append([rad*cos(w)+rad,rad*sin(w)+rad-0.4])\
+f=subdiv(t,0,0,0,0,0,0)\
+f+=polygon2d([[-0.1,-0.1],[10.1,-0.1],[10.1,10.1],[-0.1,10.1]],rgbcolor=(0,0,0),fill=True,zorder=1)\
+show(f,axes=False,aspect_ratio=1,figsize=[16,16])\
+==========================================\
+Coloured Pentagon Subdivision GIF\
+\
+for pent.spyx: In SAGE Terminal type "%attach pent.spyx" then ^C this and type "%paste":\
+\
+%attach pent.spyx\
+polygon2d.options.update(dict([['thickness',0.5]]))\
+count=0\
+for k in srange(0,2*pi-0.001,pi/60):\
+    name='/Downloads-1/gif/00\{\}.png'.format(count)\
+    print k\
+    mave=sin(k)*0.75+1.25 #between 0.5 and 2\
+    cenratio=cos(k)*1.5+1.8\
+    s=[[0,0],[10,0],[9,4],[5,5],[1,4]]\
+    f=subdiv(s,0,0,0,0,0,0,0,mave.n(),cenratio.n())\
+    f+=polygon2d([[-0.1,-0.1],[10.1,-0.1],[10.1,5.1],[-0.1,5.1]],rgbcolor=(0,0,0),fill=True,zorder=1)\
+    f.save(name,axes=False,aspect_ratio=1,figsize=[16,16])\
+    count=count+1\
+==========================================\
+Triangle Subdivision\
+\
+%attach trisub.spyx\
+\
+polygon2d.options.update(dict([['thickness',0.5]]))\
+s=[[0,0],[10,0],[5,7]]\
+f+=subdiv(s,0,0,0,0,0)\
+f+=polygon2d([[-0.1,-0.1],[10.1,-0.1],[10.1,7.1],[-0.1,7.1]],rgbcolor=(0,0,0),fill=True,zorder=1)\
+%time show(f,axes=False,aspect_ratio=1,figsize=[16,16])\
+=================================\
+Triangle Subdivision in a square\
+\
+%attach trisub.spyx\
+\
+polygon2d.options.update(dict([['thickness',0.5]]))\
+s=[[0,0],[10,0],[0,10]]\
+f=subdiv(s,0,0,0,0,0)\
+s=[[10,10],[10,0],[0,10]]\
+f+=subdiv(s,0,0,0,0,0)\
+f+=polygon2d([[-0.1,-0.1],[10.1,-0.1],[10.1,10.1],[-0.1,10.1]],rgbcolor=(0,0,0),fill=True,zorder=1)\
+%time show(f,axes=False,aspect_ratio=1,figsize=[16,16])\
+\
+====================================\
+Triangle Subdivision in an n-gon\
+\
+%attach trisub.spyx\
+pi=3.1415926535\
+ngon=6\
+rad=5\
+polygon2d.options.update(dict([['thickness',0.5]]))\
+t=[]\
+f=Graphics()\
+for w in srange(0,2*pi-0.01,2*pi/ngon):\
+    t.append([rad*cos(w)+rad,rad*sin(w)+rad])\
+for u in range(len(t)-1):\
+    s=[t[u],t[u+1],[5,5]]\
+    f+=subdiv(s,0,0,0,0,0)\
+s=[t[len(t)-1],t[0],[5,5]]\
+f+=subdiv(s,0,0,0,0,0)\
+f+=polygon2d([[-0.1,-0.1],[rad*2+0.1,-0.1],[rad*2+0.1,rad*2+0.1],[-0.1,rad*2+0.1]],rgbcolor=(0,0,0),fill=True,zorder=1)\
+%time show(f,axes=False,aspect_ratio=1,figsize=[16,16])\
+===========================\
+to convert pics to mp4:\
+ffmpeg -f image2 -r 15 -i /Downloads-1/gif/00%d.png -vcodec h264 -crf 0 test2.mp4\
+===============================\
+bits used when animating at once:\
+#g=[]\
+#    g.append(f)\
+#print 'ok'\
+  #print 'animated'\
+#a.gif(savefile='/Downloads-1/pentgif3.gif',delay=20,iterations=0)\
+#print 'saved'\
+=======================================\
+DODECAHEDRON SUBDIVISION NB OLD VERSION!!!\
+\
+xo=5;yo=5 #offsets of centre of lower circle\
+pi=3.141592653\
+phi=1.6180339\
+s=1 #side of equil triangle\
+degtoradconv=pi/180\
+#quad wont always be right-angled. argghh!!\
+rt3o2=0.866025403784439 #sqrt 3 / 2\
+cendiff=sqrt(3)*s+s\
+circle.options.update(dict([['thickness',0.5],['edgecolor',(0,0,0)]]))\
+f=circle((xo,yo),s*phi/2)\
+f+=circle((xo,yo),s*phi)\
+f=circle((xo,yo),s*phi/2)\
+f+=circle((xo,yo),s*phi)\
+\
+show(f)\
+\
+}

@@ -1,0 +1,81 @@
+from sage.plot.polygon import polygon2d
+#from sage.plot.graphics import Graphics
+cdef struct cs:
+    int R
+    int G
+    int B 
+cdef cs cols[6]
+cdef struct pt:
+    float x
+    float y
+cdef pt vv[5]
+cdef float wave(float p, float q,float qw):
+    return (p+q*qw)/(1+qw)
+cols[0].R=255 #red
+cols[0].G=80
+cols[0].B=0
+cols[1].R=80 #
+cols[1].G=0
+cols[1].B=80
+cols[2].R=0 #blue
+cols[2].G=0
+cols[2].B=255
+cols[3].R=0 #
+cols[3].G=80
+cols[3].B=80
+cols[4].R=80 #green
+cols[4].G=255
+cols[4].B=0
+cols[5].R=255 #white
+cols[5].G=255
+cols[5].B=255
+cpdef subdiv(list v, float level, int a0, int a1, int a2, int a3, int a4, int inner, float mave, float cenratio):
+    cdef float tot, RR,GG,BB
+    if level>3:
+        tot=a0+a1+a2+a3+a4+inner
+        RR=(a0*cols[0].R+a1*cols[1].R+a2*cols[2].R+a3*cols[3].R+a4*cols[4].R+inner*cols[5].R)/(tot*255)
+        GG=(a0*cols[0].G+a1*cols[1].G+a2*cols[2].G+a3*cols[3].G+a4*cols[4].G+inner*cols[5].G)/(tot*255)
+        BB=(a0*cols[0].B+a1*cols[1].B+a2*cols[2].B+a3*cols[3].B+a4*cols[4].B+inner*cols[5].B)/(tot*255)
+        return polygon2d(v,rgbcolor=(RR,GG,BB),fill=True,zorder=2)+polygon2d(v,rgbcolor=(0,0,0),fill=False,zorder=3)
+    cdef int j=0
+    cdef float nw[5][2]
+    cdef float mid[5][2]
+    cdef float cenx=0,ceny=0
+    while j<5: #turns pyth list into c array
+        vv[j].x=v[j][0]
+        vv[j].y=v[j][1] 
+        j=j+1
+    j=0 
+    while j<4:
+        cenx+=vv[j].x
+        ceny+=vv[j].y
+        mid[j][0]=wave(vv[j].x,vv[j+1].x,mave)
+        mid[j][1]=wave(vv[j].y,vv[j+1].y,mave)
+        j=j+1    
+    mid[4][0]=wave(vv[4].x,vv[0].x,mave)
+    mid[4][1]=wave(vv[4].y,vv[0].y,mave)
+    cenx=(cenx+vv[4].x)/5
+    ceny=(ceny+vv[4].y)/5
+    j=0
+    while j<5:  #NB best val for cenratio is 1.8
+        nw[j][0]=wave(mid[j][0],cenx,cenratio)
+        nw[j][1]=wave(mid[j][1],ceny,cenratio)
+        j=j+1
+    #convert to 2 lists
+    nv = []
+    midp=[]
+    j = 0
+    while j < 5:
+        nv.append([nw[j][0],nw[j][1]])
+        midp.append([mid[j][0],mid[j][1]])
+        j = j+1
+    
+#Graphics()
+    a=subdiv([midp[0],v[1],[mid[1][0],mid[1][1]],nv[1],nv[0]],level+1,a0+1,a1,a2,a3,a4,inner,mave,cenratio) 
+    a+=subdiv([midp[1],v[2],midp[2],nv[2],nv[1]],level+1,a0,a1+1,a2,a3,a4,inner,mave,cenratio)
+    a+=subdiv([midp[2],v[3],midp[3],nv[3],nv[2]],level+1, a0,a1,a2+1,a3,a4,inner,mave,cenratio)
+    a+=subdiv([midp[3],v[4],midp[4],nv[4],nv[3]],level+1,a0,a1,a2,a3+1,a4,inner,mave,cenratio)
+    a+=subdiv([midp[4],v[0],midp[0],nv[0],nv[4]],level+1,a0,a1,a2,a3,a4+1,inner,mave,cenratio)
+    a+=subdiv(nv,level+1,a0,a1,a2,a3,a4,inner+1,mave,cenratio)
+#change prev line back to level+1.4 for less in centers
+    return a

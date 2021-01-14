@@ -1,0 +1,21 @@
+'WORLD PICS'
+Better names? random faults.....ColourFault
+anyway, i realized IcePalace probably looks like it does because of the bug..
+
+					else:
+						diff+=AbsDiff(pa[i,j],pic[i,j,col]) 
+which I changed in later version to:
+					else:
+						diff+=AbsDiff(p[i,j,col],pic[i,j,col]) 
+producing a glazy, hazy look.. nothing like the crystalline look of the first Santorini pics:
+because pa[ hasnt just been written to - it may contain data from the other colours. Probably does... Not sure what I was thinking hehe. So the used new slices actually contain chopped bits of failed attempts at improved picture in another colour altogether...
+Hmm although the original had random colour faults - later version had R,G,B,R,G,B etc always in order - maybe random is 'better' for the ice palace bug.
+pa[:,:]=p[:,:,col] #<--- putting in that line, loading the temp slice from the picture each time through, fixed the bug. I had wondered why the slices added looked like they had bits of other slices on them! hahaha....... :-( Anyway, I like the effect.
+other changes which affected things:
+- changing the AbsDiff function (absolute value of difference of 2 integers) to ((n1-n2)^2)/8 - to try to make the artefacts in the ice palace disappear. hehe. small regions of incorrect colour.... Or just to be able to render small detail with more accuracy using these fault methods.
+- originally the method was '1. get random line, try adding random amount of random colour on one random chosen side of it. See if that made pic closer to target pic. If so, incorporate that into pic. Otherwise, 2. try adding same colour on the other side of the line.'
+then added the 'if not, add opposite amount of colour and see if that's better.' to both halves of that method. To make it faster. Don't really see how it would change look of pic except make changes faster...........
+-fine tuning with delta - restricted range of change amount as time goes on - because those large changes are never selected later on, and much time is wasted using high random numbers when mostly they are much too high to be successful (i.e. to make changes that improve on pic - bring it closer to target)
+
+-just added line smoothing, adding 1/2 the fault depth on at the point of the fault... maybe that will make crystals not look so good and sharp hmm.... I don't think it'll matter. The main thing is, the edges looked grainy (I'm used to 'modern' line smoothing...)
+

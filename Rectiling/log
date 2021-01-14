@@ -1,0 +1,8 @@
+running build
+running build_ext
+building '_Users_admin_R_pyx_0' extension
+creating build
+creating build/temp.macosx-10.4-i386-2.7
+gcc -fno-strict-aliasing -g -O2 -DNDEBUG -g -fwrapv -O3 -Wall -Wstrict-prototypes -I/Downloads-1/programs/Sage-5.9.app/Contents/Resources/sage/local/include/csage -I/Downloads-1/programs/Sage-5.9.app/Contents/Resources/sage/local/include -I/Downloads-1/programs/Sage-5.9.app/Contents/Resources/sage/local/include/python2.7 -I/Downloads-1/programs/Sage-5.9.app/Contents/Resources/sage/local/lib/python/site-packages/numpy/core/include -I/Downloads-1/programs/Sage-5.9.app/Contents/Resources/sage/devel/sage/sage/ext -I/Downloads-1/programs/Sage-5.9.app/Contents/Resources/sage/devel/sage -I/Downloads-1/programs/Sage-5.9.app/Contents/Resources/sage/devel/sage/sage/gsl -I. -I/Downloads-1/programs/Sage-5.9.app/Contents/Resources/sage/local/include/python2.7 -c _Users_admin_R_pyx_0.c -o build/temp.macosx-10.4-i386-2.7/_Users_admin_R_pyx_0.o -w -O2
+creating build/lib.macosx-10.4-i386-2.7
+gcc -bundle -undefined dynamic_lookup -L/Users/harold/src/sage-5.9/local/lib build/temp.macosx-10.4-i386-2.7/_Users_admin_R_pyx_0.o -L/Downloads-1/programs/Sage-5.9.app/Contents/Resources/sage/local/lib/ -lmpfr -lgmp -lgmpxx -lstdc++ -lpari -lm -lec -lgsl -lcblas -lblas -lntl -lcsage -o build/lib.macosx-10.4-i386-2.7/_Users_admin_R_pyx_0.so -L/Downloads-1/programs/Sage-5.9.app/Contents/Resources/sage/local/lib

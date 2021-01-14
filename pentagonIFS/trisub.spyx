@@ -1,0 +1,27 @@
+#Triangle subdivision
+from sage.plot.polygon import polygon2d
+DEF MAX=5.0 #change this to alter num of levels drawn
+DEF WEIGHT=2#.618 #for weighted average.
+cdef:
+	float col[4][3]
+	wave(float p, float q): return (p+q*WEIGHT)/(1+WEIGHT)
+col[0][:]=[1,0,0] #area 0 col: R
+col[1][:]=[0,1,0] #area 1 G
+col[2][:]=[0,0,1] #area 2 B
+col[3][:]=[1,1,0] #area 3: centre: yellow
+def subdiv(list v, int level, float lev0, float lev1, float lev2, float lev3):
+	cdef:
+		int j, k
+		float c[3], mid[3][2]
+	if level==MAX:
+		for j in range(3):
+			c[j]=(col[0][j]*lev0+col[1][j]*lev1+col[2][j]*lev2+col[3][j]*lev3)/MAX
+		return polygon2d(v,rgbcolor=(c[0],c[1],c[2]),fill=True,zorder=2)+polygon2d(v,rgbcolor=(0,0,0),fill=False,zorder=3)
+	m=[]
+	for j in range(3):
+		m.append([wave(v[j][0],v[(j+1)%3][0]),wave(v[j][1],v[(j+1)%3][1])])
+	a=subdiv([v[0],m[0],m[2]],level+1,lev0+1,lev1,lev2,lev3)
+	a+=subdiv([m[0],v[1],m[1]],level+1,lev0,lev1+1,lev2,lev3)
+	a+=subdiv([m[2],m[1],v[2]],level+1,lev0,lev1,lev2+1,lev3)
+	a+=subdiv([m[2],m[0],m[1]],level+1,lev0,lev1,lev2,lev3+1)
+	return a		

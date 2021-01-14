@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wc-entries
+   xmlns="svn:">
+<entry
+   committed-rev="1"
+   name=""
+   committed-date="2016-09-11T23:42:16.853763Z"
+   url="file:///Users/admin/repos/cython/pentagonIFS"
+   last-author="Adam"
+   kind="dir"
+   uuid="0c59f08e-433c-0510-9c75-d0f35b3daa0f"
+   repos="file:///Users/admin/repos"
+   revision="13"/>
+<entry
+   name="trunk"
+   kind="dir"/>
+<entry
+   name="branches"
+   kind="dir"/>
+<entry
+   name="tags"
+   kind="dir"/>
+</wc-entries>

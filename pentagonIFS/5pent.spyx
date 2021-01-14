@@ -1,0 +1,64 @@
+from sage.plot.polygon import polygon2d
+cdef struct cs:
+    int R,G,B
+cdef cs cols[6]
+cdef struct pt:
+    float x,y
+cdef pt vv[5]
+cdef float wave(float p, float q,float qw):
+    return (p+q*qw)/(1+qw)
+cols[0].R=51#255 #red
+cols[0].G=102##80
+cols[0].B=0#0
+cols[1].R=0#80 #
+cols[1].G=102#0
+cols[1].B=253#80
+cols[2].R=255#0 #blue
+cols[2].G=153#0
+cols[2].B=0#255
+cols[3].R=153#0 #
+cols[3].G=102#80
+cols[3].B=51#80
+cols[4].R=45#80 #green
+cols[4].G=134#255
+cols[4].B=45#0
+#can't I pass a pointer to an array?! uh although I.. hmm no, wouldnt work.
+cpdef subdiv(list v, float level, int a0, int a1, int a2, int a3, int a4):
+    cdef float tot, RR,GG,BB
+    if level==5:
+        tot=a0+a1+a2+a3+a4#+inner
+        RR=(a0*cols[0].R+a1*cols[1].R+a2*cols[2].R+a3*cols[3].R+a4*cols[4].R)/(tot*255)#+inner*cols[5].R)/(tot*255)
+        GG=(a0*cols[0].G+a1*cols[1].G+a2*cols[2].G+a3*cols[3].G+a4*cols[4].G)/(tot*255)#+inner*cols[5].G)/(tot*255)
+        BB=(a0*cols[0].B+a1*cols[1].B+a2*cols[2].B+a3*cols[3].B+a4*cols[4].B)/(tot*255)#+inner*cols[5].B)/(tot*255)
+        return polygon2d(v,rgbcolor=(RR,GG,BB),fill=True,zorder=2)+polygon2d(v,rgbcolor=(0,0,0),fill=False,zorder=3)
+    cdef int j=0
+    cdef float mid1[5][2], mid2[5][2]
+    cdef float cenx=0,ceny=0
+    for j in range(5): #turns pyth list into c array
+        vv[j].x=v[j][0]
+        vv[j].y=v[j][1] 
+    for j in range(4):
+        cenx+=vv[j].x
+        ceny+=vv[j].y
+        mid1[j][0]=wave(vv[j].x,vv[j+1].x,0.5)
+        mid1[j][1]=wave(vv[j].y,vv[j+1].y,0.5)
+        mid2[j][0]=wave(vv[j].x,vv[j+1].x,2)
+        mid2[j][1]=wave(vv[j].y,vv[j+1].y,2)
+    mid1[4][0]=wave(vv[4].x,vv[0].x,0.5)
+    mid1[4][1]=wave(vv[4].y,vv[0].y,0.5)
+    mid2[4][0]=wave(vv[4].x,vv[0].x,2)
+    mid2[4][1]=wave(vv[4].y,vv[0].y,2)
+    cenx=(cenx+vv[4].x)/5
+    ceny=(ceny+vv[4].y)/5
+    cent=[cenx,ceny]
+    midp1=[]
+    midp2=[]
+    for j in range(5):
+        midp1.append([mid1[j][0],mid1[j][1]])
+        midp2.append([mid2[j][0],mid2[j][1]])
+    a=subdiv([v[0],midp1[0],midp2[0],cent,midp2[4]],level+1,a0+1,a1,a2,a3,a4)
+    a+=subdiv([v[1],midp1[1],midp2[1],cent,midp2[0]],level+1,a0,a1+1,a2,a3,a4)
+    a+=subdiv([v[2],midp1[2],midp2[2],cent,midp2[1]],level+1,a0,a1,a2+1,a3,a4)
+    a+=subdiv([v[3],midp1[3],midp2[3],cent,midp2[2]],level+1,a0,a1,a2,a3+1,a4)
+    a+=subdiv([v[4],midp1[4],midp2[4],cent,midp2[3]],level+1,a0,a1,a2,a3,a4+1)
+    return a

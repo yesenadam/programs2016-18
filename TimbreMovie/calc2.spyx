@@ -1,0 +1,89 @@
+from sage.plot.polygon import polygon2d
+from sage.plot.graphics import Graphics
+cdef struct cs:
+    int R
+    int G
+    int B 
+cdef cs cols[6]
+cdef struct pt:
+    float x
+    float y
+cdef struct pts:
+    float x[2]
+cdef pt vv[5]
+cdef float wave(float p, float q,float qw):
+    return (p+q*qw)/(1+qw)
+cdef pts nv[5]
+cdef pts mid[5]
+cdef float cenx,ceny
+cols[0].R=255 #red
+cols[0].G=80
+cols[0].B=0
+cols[1].R=80 #
+cols[1].G=0
+cols[1].B=80
+cols[2].R=0 #blue
+cols[2].G=0
+cols[2].B=255
+cols[3].R=0 #
+cols[3].G=80
+cols[3].B=80
+cols[4].R=80 #green
+cols[4].G=255
+cols[4].B=0
+cols[5].R=255 #white
+cols[5].G=255
+cols[5].B=255
+cdef doit():
+    cdef pts p0, p1, p2, p3, p4
+    p0.x[0]=0
+    p0.x[1]=0
+    p1.x[0]=10
+    p1.x[1]=0
+    p2.x[0]=9
+    p2.x[1]=4
+    p3.x[0]=5
+    p3.x[1]=5
+    p4.x[0]=1
+    p4.x[1]=4
+    #s=[[0,0],[10,0],[9,4],[5,5],[1,4]]
+    return subdiv(p0,p1,p2,p3,p4,0,0,0,0,0,0,0,1)
+
+cdef subdiv(pts v0,pts v1,pts v2,pts v3,pts v4, float level, int a0, int a1, int a2, int a3, int a4, int inner, int tot):
+    cdef float RR,GG,BB
+    if level>3:
+        RR=(a0*cols[0].R+a1*cols[1].R+a2*cols[2].R+a3*cols[3].R+a4*cols[4].R+inner*cols[5].R)/(tot*255)
+        GG=(a0*cols[0].G+a1*cols[1].G+a2*cols[2].G+a3*cols[3].G+a4*cols[4].G+inner*cols[5].G)/(tot*255)
+        BB=(a0*cols[0].B+a1*cols[1].B+a2*cols[2].B+a3*cols[3].B+a4*cols[4].B+inner*cols[5].B)/(tot*255)
+        return polygon2d([[v0.x[0],v0.x[1]],[v1.x[0],v1.x[1]],[v2.x[0],v2.x[1]],[v3.x[0],v3.x[1]],[v4.x[0],v4.x[1]]],rgbcolor=(RR,GG,BB),fill=True)+polygon2d([[v0.x[0],v0.x[1]],[v1.x[0],v1.x[1]],[v2.x[0],v2.x[1]],[v3.x[0],v3.x[1]],[v4.x[0],v4.x[1]]],rgbcolor=(0,0,0),fill=False)
+#vars here
+    cenx=(v0.x[0]+v1.x[0]+v2.x[0]+v3.x[0]+v4.x[0])/5
+    ceny=(v0.x[1]+v1.x[1]+v2.x[1]+v3.x[1]+v4.x[1])/5
+    mid[0].x[0]=wave(v0.x[0],v1.x[0],1.5)
+    mid[0].x[1]=wave(v0.x[1],v1.x[1],1.5)
+    mid[1].x[0]=wave(v1.x[0],v2.x[0],1.5)
+    mid[1].x[1]=wave(v1.x[1],v2.x[1],1.5)
+    mid[2].x[0]=wave(v2.x[0],v3.x[0],1.5)
+    mid[2].x[1]=wave(v2.x[1],v3.x[1],1.5)
+    mid[3].x[0]=wave(v3.x[0],v4.x[0],1.5)
+    mid[3].x[1]=wave(v3.x[1],v4.x[1],1.5)
+    mid[4].x[0]=wave(v4.x[0],v0.x[0],1.5)
+    mid[4].x[1]=wave(v4.x[1],v0.x[1],1.5)
+    nv[0].x[0]=wave(mid[0].x[0],cenx,1.8)
+    nv[0].x[1]=wave(mid[0].x[1],ceny,1.8)
+    nv[1].x[0]=wave(mid[1].x[0],cenx,1.8)
+    nv[1].x[1]=wave(mid[1].x[1],ceny,1.8)
+    nv[2].x[0]=wave(mid[2].x[0],cenx,1.8)
+    nv[2].x[1]=wave(mid[2].x[1],ceny,1.8)
+    nv[3].x[0]=wave(mid[3].x[0],cenx,1.8)
+    nv[3].x[1]=wave(mid[3].x[1],ceny,1.8)
+    nv[4].x[0]=wave(mid[4].x[0],cenx,1.8)
+    nv[4].x[1]=wave(mid[4].x[1],ceny,1.8)
+    a=Graphics()
+    a+=subdiv(mid[0],v1,mid[1],nv[1],nv[0],level+1,a0+1,a1,a2,a3,a4,inner,tot+1) 
+    a+=subdiv(mid[1],v2,mid[2],nv[2],nv[1],level+1,a0,a1+1,a2,a3,a4,inner,tot+1)
+    a+=subdiv(mid[2],v3,mid[3],nv[3],nv[2],level+1, a0,a1,a2+1,a3,a4,inner,tot+1)
+    a+=subdiv(mid[3],v4,mid[4],nv[4],nv[3],level+1,a0,a1,a2,a3+1,a4,inner,tot+1)
+    a+=subdiv(mid[4],v0,mid[0],nv[0],nv[4],level+1,a0,a1,a2,a3,a4+1,inner,tot+1)
+    a+=subdiv(nv[0],nv[1],nv[2],nv[3],nv[4],level+1.4,a0,a1,a2,a3,a4,inner+1,tot+1)
+    return a

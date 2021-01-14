@@ -1,0 +1,39 @@
+{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf480
+{\fonttbl\f0\fswiss\fcharset77 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+\margl1440\margr1440\vieww9000\viewh8400\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
+
+\f0\fs30 \cf0 #from sage.plot import line\
+#from sage.plot.graphics import Graphics\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
+
+\fs28 \cf0 line2d.options.update(dict([['thickness',1]]))\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
+
+\fs30 \cf0 var('a b x')\
+z=a+I*b\
+x=(2*z*(z+9/16)^5)/(27*((z-3/128)^3)*((z-1)^2))\
+count=0\
+for j in srange(-4,4,0.1):	\
+	name='/Downloads-1/pent-map-gif/00\{\}.png'.format(count)\
+	count=count+1\
+	f=[]\
+	k=-4\
+	inc=0.01\
+	oldp=0;oldq=0\
+	while k<4:\
+		p=x(a=j,b=k).real().n(digits=5)\
+		q=x(a=j,b=k).imag().n(digits=5)\
+		f.append([p,q])\
+		if k>-3.8:\
+			if (p-oldp)^2+(q-oldq)^2>0.1: inc=inc/1.2\
+			if (p-oldp)^2+(q-oldq)^2<0.1: inc=inc*1.2\
+		oldp=p;oldq=q\
+		k=k+inc\
+	h=line2d(f,color='black')\
+	h+=line2d([[j,-4],[j,4]],color='blue')	\
+	h.save(name,xmax=4.2,xmin=-4.2,ymax=4.2,ymin=-4.2, aspect_ratio=1,figsize=[16,16])\
+	print j\
+	print inc\
+}

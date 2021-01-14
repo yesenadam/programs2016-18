@@ -1,0 +1,38 @@
+Rectiling v1
+
+Thanks to Ed Pegg for the great idea of using 2 numbers for each shape, for height and width. (How extremely stupid not to have thought of that!)
+I wrote a rectangle tiling program, which produces output like this:
+
+If squares are input, the tilings are the same as the Double Rainbow family of tesselations, a superset of the original "Ponting square packing".
+
+The only problem so far is that, unlike with squares, the rectangles with negative sides don't fit into the tiling. Maybe the ones with both sides negative do; I haven't even tried that yet. I suspect there's some way of getting it all to work.
+But for now, the program prints only the rectangles with positive height and width.
+<hr>
+Rectiling.pyx (Sage cython)
+To run on the Sage command line, "%attach Rectiling.pyx". To run in a Sage notebook, paste into a cell, uncommenting the first line.
+The user-edited variables I've put in 2 places between "------" lines.
+The program first calculates the h-/v-line grid (and optionally produces a png of that), then calculates the tiling.
+The rectangles are input (near the bottom of the program) with the EnterSize function, in the format ([xpos,ypos],width,height). It seems that it needs 6 rectangles specified to make a tiling, preferably mostly in a block together, so there are arithmetic sequences to extend. One of them must be at (0,0), the centre of the grid. If not enough rectangles are input, the grid will be partially empty, and further rectangles can be entered as needed to make the tiling.
+The initial rectangles included here (used in the above pic) -
+EnterSize([0,1],10,20) 
+EnterSize([1,1],12,16) 
+EnterSize([0,0],9,14) 
+EnterSize([1,0],13,13) 
+EnterSize([0,-1],8,9) 
+EnterSize([1,-1],3,10),
+- I chose because it has a lot of different sequences in it: 
+Widths: increase by 3 and 5 towards the upper right, by 6 and -3 to the upper left.
+Heights: increase by 2 and 4 to the upper right, by 4 and 7 to the upper left.
+It seems there can be 6 different sequence increments in a single rectiling, here 2,3,4,5,6 and 7.
+NB The input squares must form a h-line with the upper 4 widths, and a v-line with the lower 4 heights. e.g. in the above rectangle data,
+10+12=9+13 (h-line)
+14+9=3+10 (v-line)
+Apart from that restriction, the values can be any integers at all.
+i.e. the 20,16,8 and 3 (upper 2 widths and lower 2 heights) can be each changed separately and arbitrarily. e.g. change the 20 to a 15,10,3,-30 or anything and see the tiling change.
+A detail from (10,0):
+
+From (10,-20):
+
+From (10,30):
+
+More pics here soon..
